@@ -25,9 +25,7 @@ export default function SignIn() {
 
   const router = useRouter();
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
+  async function handleSubmit(formData: FormData) {
     setError("");
     setLoading(true);
 
@@ -38,7 +36,10 @@ export default function SignIn() {
       });
 
       if (result.error) {
-        setError(result.error.message ?? "Failed to sign in");
+        setError(
+          result.error.message ??
+            `Failed to sign in name [${formData.get("name")}] email [${formData.get("email")}]`,
+        );
       } else {
         router.push("/dashboard");
       }
@@ -60,7 +61,7 @@ export default function SignIn() {
             Enter your credentials to access your account
           </CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form action={handleSubmit} className="space-y-4">
           <CardContent className="space-y-4">
             {error && (
               <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">

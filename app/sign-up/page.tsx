@@ -26,9 +26,7 @@ export default function SignUp() {
 
   const router = useRouter();
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
+  async function handleSubmit(formData: FormData) {
     setError("");
     setLoading(true);
 
@@ -40,7 +38,10 @@ export default function SignUp() {
       });
 
       if (result.error) {
-        setError(result.error.message ?? "Failed to sign up");
+        setError(
+          result.error.message ??
+            `Failed to sign up name [${formData.get("name")}] email [${formData.get("email")}]`,
+        );
       } else {
         router.push("/dashboard");
       }
@@ -62,7 +63,7 @@ export default function SignUp() {
             Create an account to start tracking your job applications
           </CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form action={handleSubmit} className="space-y-4">
           <CardContent className="space-y-4">
             {error && (
               <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
