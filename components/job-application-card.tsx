@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { Button, buttonVariants } from "./ui/button";
+import { Button } from "./ui/button";
 import {
   deleteJobApplication,
   updateJobApplication,
@@ -134,11 +134,9 @@ export default function JobApplicationCard({
             <div className="flex items-start gap-1">
               <DropdownMenu>
                 <DropdownMenuTrigger
-                  className={buttonVariants({
-                    variant: "ghost",
-                    size: "icon",
-                    className: "h-6 w-6",
-                  })}
+                  render={
+                    <Button variant="ghost" size="icon" className="h-6 w-6" />
+                  }
                 >
                   <MoreVertical className="h-4 w-4" />
                 </DropdownMenuTrigger>

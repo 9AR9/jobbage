@@ -18,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { Button, buttonVariants } from "./ui/button";
+import { Button } from "./ui/button";
 import CreateJobApplicationDialog from "./create-job-application-dialog";
 import JobApplicationCard from "./job-application-card";
 import { useBoard } from "@/lib/hooks/use-board";
@@ -108,11 +108,9 @@ function DroppableColumn({
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger
-              className={buttonVariants({
-                variant: "ghost",
-                size: "icon",
-                className: "h-6 w-6",
-              })}
+              render={
+                <Button variant="ghost" size="icon" className="h-6 w-6" />
+              }
             >
               <MoreVertical className="h-4 w-4" />
             </DropdownMenuTrigger>
@@ -128,23 +126,15 @@ function DroppableColumn({
 
       <CardContent
         // ref={setNodeRef}
-        className={`space-y-2 pt-4 bg-gray-50/50 min-h-[400px] rounded-b-lg ${
-          // isOver ? "ring-2 ring-blue-500" : ""
-          "ring-2 ring-blue-500"
-        }`}
+        className="space-y-2 pt-4 bg-gray-50/50 min-h-[400px] rounded-b-lg"
       >
-        {/* <SortableContext
-          items={sortedJobs.map((job) => job._id)}
-          strategy={verticalListSortingStrategy}
-        >
-          {sortedJobs.map((job, key) => (
-            <SortableJobCard
-              key={key}
-              job={{ ...job, columnId: job.columnId || column._id }}
-              columns={sortedColumns}
-            />
-          ))}
-        </SortableContext> */}
+        {sortedJobs.map((job) => (
+          <JobApplicationCard
+            key={job._id}
+            job={{ ...job, columnId: job.columnId || column._id }}
+            columns={sortedColumns}
+          />
+        ))}
 
         <CreateJobApplicationDialog columnId={column._id} boardId={boardId} />
       </CardContent>

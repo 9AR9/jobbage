@@ -2,7 +2,7 @@
 
 import { Briefcase } from "lucide-react";
 import Link from "next/link";
-import { Button, buttonVariants } from "./ui/button";
+import { Button } from "./ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,11 +41,13 @@ export default function Navbar() {
               </Link>
               <DropdownMenu>
                 <DropdownMenuTrigger
-                  className={buttonVariants({
-                    variant: "ghost",
-                    size: "icon",
-                    className: "relative h-8 w-8 founded-full",
-                  })}
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="relative h-8 w-8 founded-full"
+                    />
+                  }
                 >
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-primary text-white">
