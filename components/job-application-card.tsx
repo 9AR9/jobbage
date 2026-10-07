@@ -50,7 +50,7 @@ export default function JobApplicationCard({
     description: job.description || "",
   });
 
-  async function handleUpdate(e: React.FormEvent) {
+  async function handleUpdate(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     try {
       const result = await updateJobApplication(job._id, {
