@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Board, Column, JobApplication } from "../models/models.types";
 import { updateJobApplication } from "../actions/job-applications";
 import { JOB_ORDER_STEP } from "../constants";
@@ -10,12 +10,17 @@ export function useBoard(initialBoard?: Board | null) {
   const [columns, setColumns] = useState<Column[]>(initialBoard?.columns || []);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  // When the server sends a fresh board (e.g. after revalidation), replace the
+  // local copy. Done during render rather than in an effect so React doesn't
+  // paint stale columns first and then re-render.
+  const [previousInitialBoard, setPreviousInitialBoard] = useState(initialBoard);
+  if (initialBoard !== previousInitialBoard) {
+    setPreviousInitialBoard(initialBoard);
     if (initialBoard) {
       setBoard(initialBoard);
       setColumns(initialBoard.columns || []);
     }
-  }, [initialBoard]);
+  }
 
   async function moveJob(
     jobApplicationId: string,
