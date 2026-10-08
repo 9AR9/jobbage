@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getSession } from "../auth/auth";
 import connectDB from "../db";
 import { Board, Column, JobApplication } from "../models";
+import { JOB_ORDER_STEP } from "../constants";
 
 interface JobApplicationData {
   company: string;
@@ -82,7 +83,7 @@ export async function createJobApplication(data: JobApplicationData) {
     tags: tags || [],
     description,
     status: "applied",
-    order: maxOrder ? maxOrder.order + 1 : 0,
+    order: maxOrder ? maxOrder.order + JOB_ORDER_STEP : 0,
   });
 
   await Column.findByIdAndUpdate(columnId, {
@@ -114,6 +115,10 @@ export async function updateJobApplication(
   if (!session?.user) {
     return { error: "Unauthorized" };
   }
+
+  // Server actions can run in a fresh process, and db.ts sets
+  // bufferCommands: false, so queries fail unless we're connected first.
+  await connectDB();
 
   const jobApplication = await JobApplication.findById(id);
 
@@ -150,83 +155,55 @@ export async function updateJobApplication(
     await Column.findByIdAndUpdate(currentColumnId, {
       $pull: { jobApplications: id },
     });
-
-    const jobsInTargetColumn = await JobApplication.find({
-      columnId: newColumnId,
-      _id: { $ne: id },
-    })
-      .sort({ order: 1 })
-      .lean();
-
-    let newOrderValue: number;
-
-    if (order !== undefined && order !== null) {
-      newOrderValue = order * 100;
-
-      const jobsThatNeedToShift = jobsInTargetColumn.slice(order);
-      for (const job of jobsThatNeedToShift) {
-        await JobApplication.findByIdAndUpdate(job._id, {
-          $set: { order: job.order + 100 },
-        });
-      }
-    } else {
-      if (jobsInTargetColumn.length > 0) {
-        const lastJobOrder =
-          jobsInTargetColumn[jobsInTargetColumn.length - 1].order || 0;
-        newOrderValue = lastJobOrder + 100;
-      } else {
-        newOrderValue = 0;
-      }
-    }
-
-    updatesToApply.columnId = newColumnId;
-    updatesToApply.order = newOrderValue;
-
     await Column.findByIdAndUpdate(newColumnId, {
       $push: { jobApplications: id },
     });
-  } else if (order !== undefined && order !== null) {
-    const otherJobsInColumn = await JobApplication.find({
-      columnId: currentColumnId,
+    updatesToApply.columnId = newColumnId;
+  }
+
+  if (isMovingToDifferentColumn || (order !== undefined && order !== null)) {
+    const targetColumnId = newColumnId || currentColumnId;
+
+    const otherJobs = await JobApplication.find({
+      columnId: targetColumnId,
       _id: { $ne: id },
     })
-      .sort({ order: 1 })
+      .sort({ order: 1, _id: 1 })
+      .select("_id")
       .lean();
 
-    const currentJobOrder = jobApplication.order || 0;
-    const currentPositionIndex = otherJobsInColumn.findIndex(
-      (job) => job.order > currentJobOrder,
+    // order is a position index. Clamp it to 0..length rather than relying on
+    // how splice treats bad values: a negative index counts from the end (the
+    // card would land second-to-last) and NaN becomes 0 (silently the top).
+    // The column can also change between the drag and this call (e.g. another
+    // tab deleted a card), so an out-of-range value means "at the bottom".
+    const index = Math.min(
+      Math.max(order ?? otherJobs.length, 0),
+      otherJobs.length,
     );
-    const oldPositionindex =
-      currentPositionIndex === -1
-        ? otherJobsInColumn.length
-        : currentPositionIndex;
+    const orderedIds = otherJobs.map((job) => job._id.toString());
+    orderedIds.splice(index, 0, id);
 
-    const newOrderValue = order * 100;
+    // Rewrite the whole column as 0, JOB_ORDER_STEP, 2 * JOB_ORDER_STEP... so gaps
+    // and ties from earlier moves can't push a job to the wrong place.
+    await JobApplication.bulkWrite(
+      orderedIds.map((jobId, position) => ({
+        updateOne: {
+          filter: { _id: jobId },
+          update: { $set: { order: position * JOB_ORDER_STEP } },
+        },
+      })),
+    );
 
-    if (order < oldPositionindex) {
-      const jobsToShiftDown = otherJobsInColumn.slice(order, oldPositionindex);
-
-      for (const job of jobsToShiftDown) {
-        await JobApplication.findByIdAndUpdate(job._id, {
-          $set: { order: job.order + 100 },
-        });
-      }
-    } else if (order > oldPositionindex) {
-      const jobsToShiftUp = otherJobsInColumn.slice(oldPositionindex, order);
-      for (const job of jobsToShiftUp) {
-        const newOrder = Math.max(0, job.order - 100);
-        await JobApplication.findByIdAndUpdate(job._id, {
-          $set: { order: newOrder },
-        });
-      }
+    delete updatesToApply.order;
+    delete updatesToApply.columnId;
+    if (isMovingToDifferentColumn) {
+      await JobApplication.findByIdAndUpdate(id, { columnId: newColumnId });
     }
-
-    updatesToApply.order = newOrderValue;
   }
 
   const updated = await JobApplication.findByIdAndUpdate(id, updatesToApply, {
-    new: true,
+    returnDocument: "after",
   });
 
   revalidatePath("/dashboard");
@@ -240,6 +217,10 @@ export async function deleteJobApplication(id: string) {
   if (!session?.user) {
     return { error: "Unauthorized" };
   }
+
+  // Server actions can run in a fresh process, and db.ts sets
+  // bufferCommands: false, so queries fail unless we're connected first.
+  await connectDB();
 
   const jobApplication = await JobApplication.findById(id);
 

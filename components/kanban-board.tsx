@@ -35,7 +35,11 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { useSortable } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 
 interface KanbanBoardProperties {
   board: Board;
@@ -105,7 +109,11 @@ function DroppableColumn({
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <Button variant="ghost" size="icon" className="h-6 w-6" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 text-white hover:bg-white/20"
+                />
               }
             >
               <MoreVertical className="h-4 w-4" />
@@ -122,15 +130,22 @@ function DroppableColumn({
 
       <CardContent
         ref={setNodeRef}
-        className="space-y-2 pt-4 bg-gray-50/50 min-h-[400px] rounded-b-lg"
+        className={`space-y-2 pt-4 bg-gray-50/50 min-h-[400px] rounded-b-lg ${
+            isOver ? "ring-2 ring-blue-500" : ""
+        }`}
       >
-        {sortedJobs.map((job) => (
-          <JobApplicationCard
-            key={job._id}
-            job={{ ...job, columnId: job.columnId || column._id }}
-            columns={sortedColumns}
-          />
-        ))}
+        <SortableContext
+          items={sortedJobs.map((job) => job._id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {sortedJobs.map((job) => (
+            <SortableJobCard
+              key={job._id}
+              job={{ ...job, columnId: job.columnId || column._id }}
+              columns={sortedColumns}
+            />
+          ))}
+        </SortableContext>
 
         <CreateJobApplicationDialog columnId={column._id} boardId={boardId} />
       </CardContent>
@@ -282,7 +297,18 @@ export default function KanbanBoard({ board, userId }: KanbanBoardProperties) {
             newOrder = targetIndexInFiltered;
           }
         } else {
-          newOrder = targetIndexInFiltered;
+          // Different column: insert before the card we're over, unless the
+          // dragged card's center is below that card's center (e.g. released
+          // in the empty space under the last card), then insert after it.
+          const draggedRect = active.rect.current.translated;
+          const isBelowTarget =
+            draggedRect &&
+            draggedRect.top + draggedRect.height / 2 >
+              over.rect.top + over.rect.height / 2;
+
+          newOrder = isBelowTarget
+            ? targetIndexInFiltered + 1
+            : targetIndexInFiltered;
         }
       } else {
         newOrder = allJobsInTargetFiltered.length;
@@ -303,6 +329,9 @@ export default function KanbanBoard({ board, userId }: KanbanBoardProperties) {
     .find((job) => job._id === activeId);
   return (
     <DndContext
+      // Fixed id: dnd-kit otherwise numbers its aria-describedby ids with a
+      // counter that differs between server and browser (hydration mismatch).
+      id="kanban-board"
       sensors={sensors}
       collisionDetection={closestCorners}
       onDragStart={handleDragStart}

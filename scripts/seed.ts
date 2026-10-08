@@ -1,6 +1,7 @@
 import connectDB from "../lib/db";
 import "@/lib/models";
 import { Board, Column, JobApplication } from "@/lib/models";
+import { JOB_ORDER_STEP } from "../lib/constants";
 
 const USER_ID = "6ab308082fbf36d6d68b6560";
 
@@ -245,7 +246,7 @@ async function seed() {
           boardId: board._id,
           userId: USER_ID,
           status: columnName.toLowerCase().replace(" ", "-"),
-          order: i,
+          order: i * JOB_ORDER_STEP,
         });
 
         column.jobApplications.push(jobApplication._id);

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Board, Column, JobApplication } from "../models/models.types";
 import { updateJobApplication } from "../actions/job-applications";
+import { JOB_ORDER_STEP } from "../constants";
 
 export function useBoard(initialBoard?: Board | null) {
   const [board, setBoard] = useState<Board | null>(initialBoard || null);
@@ -58,12 +59,12 @@ export function useBoard(initialBoard?: Board | null) {
           updatedJobs.splice(newOrder, 0, {
             ...jobToMove,
             columnId: newColumnId,
-            order: newOrder * 100,
+            order: newOrder * JOB_ORDER_STEP,
           });
 
           const jobsWithUpdatedOrders = updatedJobs.map((job, index) => ({
             ...job,
-            order: index * 100,
+            order: index * JOB_ORDER_STEP,
           }));
 
           newColumns[targetColumnIndex] = {
