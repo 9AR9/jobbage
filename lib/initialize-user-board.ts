@@ -1,4 +1,3 @@
-import { error } from "console";
 import connectDB from "./db";
 import { Board, Column } from "./models";
 

@@ -6,7 +6,6 @@ import {
   Calendar,
   CheckCircle2,
   Mic,
-  MoreHorizontal,
   MoreVertical,
   Trash2,
   XCircle,
@@ -43,7 +42,6 @@ import {
 
 interface KanbanBoardProperties {
   board: Board;
-  userId: string;
 }
 
 interface ColumnConfig {
@@ -191,7 +189,7 @@ function SortableJobCard({
   );
 }
 
-export default function KanbanBoard({ board, userId }: KanbanBoardProperties) {
+export default function KanbanBoard({ board }: KanbanBoardProperties) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const { columns, moveJob } = useBoard(board);
 

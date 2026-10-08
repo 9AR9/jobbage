@@ -43,7 +43,7 @@ export default function SignIn() {
       } else {
         router.push("/dashboard");
       }
-    } catch (error) {
+    } catch {
       setError("An unexpected error occurred");
     } finally {
       setLoading(false);

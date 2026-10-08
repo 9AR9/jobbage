@@ -8,7 +8,7 @@ import { JOB_ORDER_STEP } from "../constants";
 export function useBoard(initialBoard?: Board | null) {
   const [board, setBoard] = useState<Board | null>(initialBoard || null);
   const [columns, setColumns] = useState<Column[]>(initialBoard?.columns || []);
-  const [error, setError] = useState<String | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (initialBoard) {
@@ -22,6 +22,10 @@ export function useBoard(initialBoard?: Board | null) {
     newColumnId: string,
     newOrder: number,
   ) {
+    // Snapshot so a failed server update can put the board back as it was.
+    const previousColumns = columns;
+    setError(null);
+
     setColumns((previous) => {
       const newColumns = previous.map((column) => ({
         ...column,
@@ -82,8 +86,15 @@ export function useBoard(initialBoard?: Board | null) {
         columnId: newColumnId,
         order: newOrder,
       });
+
+      if (result.error) {
+        setColumns(previousColumns);
+        setError(result.error);
+      }
     } catch (error) {
       console.error("Error", error);
+      setColumns(previousColumns);
+      setError("Failed to move job application");
     }
   }
 
