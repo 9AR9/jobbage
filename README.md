@@ -1,43 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Jobbage
 
-## Getting Started
+A Kanban-style job application tracker. Sign up, then move applications
+between Wish List, Applied, Interviewing, Offer and Rejected by drag and drop.
 
-First, run the development server:
+Built with Next.js (App Router, Cache Components), React, Tailwind CSS,
+shadcn/base-ui, [better-auth](https://www.better-auth.com), MongoDB (Mongoose)
+and [dnd-kit](https://dndkit.com). Based on the
+[job-application-tracker tutorial](https://github.com/machadop1407/job-application-tracker).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Getting started
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. Install dependencies:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+   ```bash
+   npm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. Create `.env.local` with:
 
-## Learn More
+   ```bash
+   MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>/<database>
+   BETTER_AUTH_SECRET=<random secret>
+   BETTER_AUTH_URL=http://localhost:3000
+   NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+   If you use MongoDB Atlas, your current IP address must be on the cluster's
+   Network Access list.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. Start the dev server and open [http://localhost:3000](http://localhost:3000):
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   ```bash
+   npm run dev
+   ```
 
-## Deploy on Vercel
+## Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-## References and Resources
-
-- [NextJS 16 Full Course 2026 by PedroTech](https://www.youtube.com/watch?v=vCIsrOGNhas)
-- [NextJS: The React Framework for the Web](https://nextjs.org/)
-- [Taiwind CSS](https://tailwindcss.com/)
-- [shadcn: The Foundation for your Design System](https://ui.shadcn.com/)
+- `npm run dev` / `npm run build` / `npm start`: run, build and serve the app.
+- `npm run lint`: run ESLint.
+- `SEED_USER_ID=<user id> npm run seed:jobs`: replace that user's job
+  applications with sample data. Existing applications for that user are
+  deleted first.

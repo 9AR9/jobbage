@@ -25,7 +25,7 @@ export default function Navbar() {
           className="flex items-center gap-2 text-xl font-semibold text-primary"
         >
           <Briefcase />
-          Job Tracker
+          Jobbage
         </Link>
         <div className="flex items-center gap-4">
           {session?.user ? (

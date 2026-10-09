@@ -3,7 +3,9 @@ import "@/lib/models";
 import { Board, Column, JobApplication } from "@/lib/models";
 import { JOB_ORDER_STEP } from "../lib/constants";
 
-const USER_ID = "6ab308082fbf36d6d68b6560";
+// The user whose job applications get replaced with the sample data.
+const USER_ID = process.env.SEED_USER_ID;
+
 
 const SAMPLE_JOBS = [
   // Wish List
@@ -153,7 +155,7 @@ const SAMPLE_JOBS = [
 async function seed() {
   if (!USER_ID) {
     console.error("❌ Error: SEED_USER_ID environment variable is required");
-    console.log("Usage: SEED_USER_ID=your-user-id npm run seed");
+    console.log("Usage: SEED_USER_ID=your-user-id npm run seed:jobs");
     process.exit(1);
   }
 
